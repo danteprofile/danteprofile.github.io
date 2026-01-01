@@ -1,16 +1,85 @@
 /**
  * DANTE CLIFFORD - Character Profile
  * Interactive JavaScript
+ * Mobile-First
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    initHamburgerMenu();
     initParticles();
     initAudioControl();
     initScrollReveal();
     initGallery();
     initPersonalityBars();
     initSmoothScroll();
+    initNavScrollHide();
 });
+
+/**
+ * Hamburger Menu Toggle
+ */
+function initHamburgerMenu() {
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('navMenu');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (!hamburger || !navMenu) return;
+    
+    // Toggle menu
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navMenu.classList.toggle('active');
+        document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+    });
+    
+    // Close menu when clicking a link
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+            hamburger.classList.remove('active');
+            navMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+/**
+ * Hide/Show Navigation on Scroll
+ */
+function initNavScrollHide() {
+    const nav = document.getElementById('nav');
+    if (!nav) return;
+    
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                    nav.style.transform = 'translateY(-100%)';
+                } else {
+                    nav.style.transform = 'translateY(0)';
+                }
+                
+                nav.style.transition = 'transform 0.3s ease';
+                lastScrollY = currentScrollY;
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
 
 /**
  * Ambient Floating Particles
@@ -19,7 +88,8 @@ function initParticles() {
     const particlesContainer = document.getElementById('particles');
     if (!particlesContainer) return;
     
-    const particleCount = window.innerWidth < 768 ? 20 : 40;
+    // Fewer particles on mobile for performance
+    const particleCount = window.innerWidth < 768 ? 15 : 30;
     
     for (let i = 0; i < particleCount; i++) {
         createParticle(particlesContainer, i);
@@ -30,7 +100,6 @@ function createParticle(container, index) {
     const particle = document.createElement('div');
     particle.className = 'particle';
     
-    // Random positioning and timing
     const randomX = Math.random() * 100;
     const randomDelay = Math.random() * 15;
     const randomDuration = 15 + Math.random() * 10;
@@ -56,12 +125,12 @@ function initAudioControl() {
     
     if (!audioControl || !bgMusic) return;
     
-    // Set initial volume
     bgMusic.volume = 0.3;
-    
     let isPlaying = false;
     
-    audioControl.addEventListener('click', () => {
+    audioControl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
         if (isPlaying) {
             bgMusic.pause();
             audioControl.classList.remove('playing');
@@ -69,13 +138,12 @@ function initAudioControl() {
             bgMusic.play().then(() => {
                 audioControl.classList.add('playing');
             }).catch(err => {
-                console.log('Audio playback failed:', err);
+                console.log('Audio playback requires user interaction:', err);
             });
         }
         isPlaying = !isPlaying;
     });
     
-    // Handle audio ending (though it's looped)
     bgMusic.addEventListener('ended', () => {
         audioControl.classList.remove('playing');
         isPlaying = false;
@@ -90,20 +158,24 @@ function initScrollReveal() {
     
     if (!revealElements.length) return;
     
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (prefersReducedMotion) {
+        revealElements.forEach(el => el.classList.add('revealed'));
+        return;
+    }
+    
     const revealOptions = {
         root: null,
-        rootMargin: '0px 0px -50px 0px',
+        rootMargin: '0px 0px -30px 0px',
         threshold: 0.1
     };
     
     const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
+        entries.forEach((entry) => {
             if (entry.isIntersecting) {
-                // Stagger the reveal animation
-                setTimeout(() => {
-                    entry.target.classList.add('revealed');
-                }, index * 100);
-                
+                entry.target.classList.add('revealed');
                 revealObserver.unobserve(entry.target);
             }
         });
@@ -125,22 +197,19 @@ function initGallery() {
     
     thumbnails.forEach(thumb => {
         thumb.addEventListener('click', () => {
-            // Update active state
             thumbnails.forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
             
-            // Fade transition
             galleryMain.style.opacity = '0';
             
             setTimeout(() => {
                 galleryMain.src = thumb.dataset.full;
                 galleryMain.style.opacity = '1';
-            }, 300);
+            }, 200);
         });
     });
     
-    // Add transition style
-    galleryMain.style.transition = 'opacity 0.3s ease';
+    galleryMain.style.transition = 'opacity 0.2s ease';
 }
 
 /**
@@ -154,7 +223,7 @@ function initPersonalityBars() {
     const barOptions = {
         root: null,
         rootMargin: '0px',
-        threshold: 0.5
+        threshold: 0.3
     };
     
     const barObserver = new IntersectionObserver((entries) => {
@@ -185,9 +254,13 @@ function initSmoothScroll() {
             
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+                // Account for fixed nav height
+                const navHeight = document.getElementById('nav')?.offsetHeight || 60;
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
                 });
             }
         });
@@ -195,91 +268,7 @@ function initSmoothScroll() {
 }
 
 /**
- * Parallax Effect for Hero Section (Optional Enhancement)
- */
-function initParallax() {
-    const hero = document.querySelector('.hero');
-    
-    if (!hero || window.innerWidth < 768) return;
-    
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const heroHeight = hero.offsetHeight;
-        
-        if (scrolled < heroHeight) {
-            const heroContent = hero.querySelector('.hero-content');
-            if (heroContent) {
-                heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
-                heroContent.style.opacity = 1 - (scrolled / heroHeight) * 0.5;
-            }
-        }
-    });
-}
-
-/**
- * Typewriter Effect for Dialogue (Optional Enhancement)
- */
-function typeWriter(element, text, speed = 50) {
-    let i = 0;
-    element.innerHTML = '';
-    
-    function type() {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-            setTimeout(type, speed);
-        }
-    }
-    
-    type();
-}
-
-/**
- * Handle Reduced Motion Preference
- */
-function checkReducedMotion() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    if (prefersReducedMotion) {
-        // Disable animations for users who prefer reduced motion
-        document.documentElement.style.setProperty('--transition-slow', '0.01ms');
-        document.documentElement.style.setProperty('--transition-slower', '0.01ms');
-        
-        // Reveal all elements immediately
-        document.querySelectorAll('[data-reveal]').forEach(el => {
-            el.classList.add('revealed');
-        });
-    }
-}
-
-// Check reduced motion preference on load
-checkReducedMotion();
-
-/**
- * Resize Handler
- */
-let resizeTimeout;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-        // Recalculate particles on resize if needed
-        const particlesContainer = document.getElementById('particles');
-        if (particlesContainer) {
-            const currentCount = particlesContainer.children.length;
-            const targetCount = window.innerWidth < 768 ? 20 : 40;
-            
-            if (Math.abs(currentCount - targetCount) > 10) {
-                particlesContainer.innerHTML = '';
-                for (let i = 0; i < targetCount; i++) {
-                    createParticle(particlesContainer, i);
-                }
-            }
-        }
-    }, 250);
-});
-
-/**
- * Loading Animation (Optional)
+ * Window Load Handler
  */
 window.addEventListener('load', () => {
     document.body.classList.add('loaded');
@@ -289,7 +278,27 @@ window.addEventListener('load', () => {
         document.querySelectorAll('.hero [data-reveal]').forEach((el, i) => {
             setTimeout(() => {
                 el.classList.add('revealed');
-            }, i * 150);
+            }, i * 100);
         });
-    }, 300);
+    }, 200);
 });
+
+/**
+ * Resize Handler (debounced)
+ */
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        // Close mobile menu on resize to desktop
+        if (window.innerWidth >= 768) {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            if (hamburger && navMenu) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+    }, 250);
+}, { passive: true });

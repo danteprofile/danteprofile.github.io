@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Dante Clifford | 단테 클리포드</title>
     <meta name="description" content="클리포드 백작가의 현 가주이자 대법관, 단테 클리포드의 공식 프로필">
     
@@ -16,6 +16,27 @@
 <body>
     <!-- Ambient particles -->
     <div class="particles" id="particles"></div>
+    
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-header">
+            <a href="#hero" class="nav-logo">D.C.</a>
+            <button class="hamburger" id="hamburger" aria-label="메뉴 열기">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="#profile" class="nav-link">Profile</a></li>
+            <li><a href="#background" class="nav-link">Background</a></li>
+            <li><a href="#personality" class="nav-link">Personality</a></li>
+            <li><a href="#nsfw" class="nav-link">Sexual</a></li>
+            <li><a href="#npc" class="nav-link">NPC</a></li>
+            <li><a href="#greeting" class="nav-link">Greeting</a></li>
+            <li><a href="#download" class="nav-link nav-download">Download</a></li>
+        </ul>
+    </nav>
     
     <!-- Audio Control -->
     <button class="audio-control" id="audioControl" aria-label="배경음악 재생/정지">
@@ -44,10 +65,6 @@
                 <div class="hero-frame">
                     <img src="단테 썸네일.webp" alt="Dante Clifford" class="hero-image">
                 </div>
-                <div class="hero-frame-ornament top-left"></div>
-                <div class="hero-frame-ornament top-right"></div>
-                <div class="hero-frame-ornament bottom-left"></div>
-                <div class="hero-frame-ornament bottom-right"></div>
             </div>
             
             <div class="hero-text">
@@ -69,7 +86,7 @@
                     </div>
                     <div class="symbol-item">
                         <span class="symbol-icon">🪵</span>
-                        <span class="symbol-label">물푸레나무 지팡이(훈육용)</span>
+                        <span class="symbol-label">물푸레나무 지팡이</span>
                     </div>
                 </div>
             </div>
@@ -471,7 +488,6 @@
     <section class="download" id="download">
         <div class="section-container">
             <div class="download-content" data-reveal>
-                <div class="download-ornament left"></div>
                 <div class="download-text">
                     <h3 class="download-title">Download Character</h3>
                     <p class="download-desc">캐릭터 파일을 다운로드하여 대화를 시작하세요</p>
@@ -483,7 +499,6 @@
                     <span class="btn-text">Download</span>
                     <span class="btn-icon">↓</span>
                 </a>
-                <div class="download-ornament right"></div>
             </div>
         </div>
     </section>
